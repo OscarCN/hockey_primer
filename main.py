@@ -12,25 +12,11 @@ import numpy as np
 
 from milestone1_func import get_game_ids_for_season, save_game_data_to_local, load_data_from_files
 
-"""##2. Feature Engineering I (10%)"""
-
-'''
-Using the functionality you created for Milestone 1, acquire all of the raw play-by-play data for the 2015/16 season
-all the way to the 2019/20 season (inclusive). Note that the tidied data that you created will be useful for the baseline
-models, but you will be creating more features that will require the full raw data in Part 4.
-
-Set aside all of the 2019/20 data as your final test set. You should not touch this until you reach the end of this milestone.
-You will use the 2015/16 - 2018/19 regular season data to create your training and validation sets. By the end of this milestone,
-you will have built up all the framework you need to process new data, so it should be trivial to process your test data once
-you have finished all of the necessary feature engineering. Until Part 7, any reference to the “dataset” will exclusively refer
-to the 2015/16 - 2018/19 data.
-'''
-
-#directory = "/content/drive/MyDrive/DS-Project/milestone2_data" #change this to your directory
-
 
 directory = "data"  # change this to your directory: run from root milestone2 dir
 
+
+# LOAD DATA
 
 '''
 1. Acquire all of the raw play-by-play data for the 2015/16 season all the way to the 2019/20 season (inclusive)
@@ -64,7 +50,7 @@ else:
     data['season'] = data['gamePk'].apply(lambda x: str(x)[:4])
     data['game_type'] = data['gamePk'].apply(lambda x: str(x)[4:6])
 
-    # TEST SET
+    # TEST SET  # TODO: TIDY TEST DATA HERE ALSO
 
     # 2019-2020 season  # TODO: SHOULD WE KEEP ONLY game_type == '02' AS IN training_set?
     test_set = data[data['season'] == '2019'].copy()
@@ -87,8 +73,10 @@ else:
 
 tidied_training_set.iloc[1]
 
-# Uncomment to delete json files from directory (can use after saving data as csv)
 '''
+# Uncomment to delete json files from directory (can use after saving data as csv)
+# json files are around 2Gb size! 
+
 file_list = os.listdir(directory)
 
 json_files = [f for f in file_list if f.endswith(".json")]
@@ -100,15 +88,27 @@ for json_file in json_files:
 '''
 
 
-"""#### Feature Engineering 1"""
-
+"""#### 2. Feature Engineering I"""
 # SEE feature_engineering_1.py
 
-#checked https://www.nhl.com/gamecenter/nyi-vs-sjs/2015/10/17/2015020071/playbyplay
+# OJO !
+# checked https://www.nhl.com/gamecenter/nyi-vs-sjs/2015/10/17/2015020071/playbyplay
 # and rink side is wrong ...
 
 
+"""#### 4. Feature Engineering II (15% + bonus 5%)"""
+# SEE feature_engineering_2.py
 
 
-"""# 4. Feature Engineering II (15% + bonus 5%)"""
+
+
+
+
+
+
+
+
+
+
+
 

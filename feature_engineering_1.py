@@ -43,23 +43,23 @@ shot/goal event.
 '''
 
 
-def tidy_data(training_set):
+def tidy_data(df):
 
-    training_set = training_set.copy()
+    df = df.copy()
 
-    tidied_training_set = pd.DataFrame(t for i, l in training_set.iterrows() for t in get_play_data(l))
+    tidied = pd.DataFrame(t for i, l in df.iterrows() for t in get_play_data(l))
 
     # Add column Is goal (0 or 1)
-    tidied_training_set['IsGoal'] = (tidied_training_set['eventTypeId'] == 'GOAL').astype(int)
+    tidied['IsGoal'] = (tidied['eventTypeId'] == 'GOAL').astype(int)
 
     # Replace column emptyNet (0 or 1; you can assume NaNs are 0)
-    tidied_training_set['emptyNet'] = tidied_training_set['emptyNet'].replace([np.nan, False, True], [0, 0, 1])
+    tidied['emptyNet'] = tidied['emptyNet'].replace([np.nan, False, True], [0, 0, 1])
 
     # add rink_side column
     seasons = ["20152016", "20162017", "20172018", "20182019"]  # , "20192020"]
     for season in seasons:
         game_info_list = create_game_info_list(season)
-        add_home_away_rink_side_columns(tidied_training_set, game_info_list)
+        add_home_away_rink_side_columns(tidied, game_info_list)
 
     # Add column Distance from net
 
@@ -67,11 +67,11 @@ def tidy_data(training_set):
     # if rink side is left offense is on the right
     # if rink side is left: trying to score in right net (89, 0)
     # if rink side is right: trying to score in left net (-89, 0)
-    tidied_training_set['Distance_from_net'] = np.sqrt(
+    tidied['Distance_from_net'] = np.sqrt(
         np.where(
-            tidied_training_set['rink_side'] == 'left',
-            (tidied_training_set['x'] - 89) ** 2 + tidied_training_set['y'] ** 2,
-            (tidied_training_set['x'] + 89) ** 2 + tidied_training_set['y'] ** 2
+            tidied['rink_side'] == 'left',
+            (tidied['x'] - 89) ** 2 + tidied['y'] ** 2,
+            (tidied['x'] + 89) ** 2 + tidied['y'] ** 2
         )
     )
 
@@ -81,19 +81,20 @@ def tidy_data(training_set):
     # if shoots completely from the side (x=89 or -89), then angle is 90 deg
     # add a temp column x_distance_from_net
 
-    tidied_training_set['x_distance_from_net'] = np.where(
-        tidied_training_set['rink_side'] == 'left',
-        abs(89 - tidied_training_set['x']),
-        abs(-89 - tidied_training_set['x'])
+    tidied['x_distance_from_net'] = np.where(
+        tidied['rink_side'] == 'left',
+        abs(89 - tidied['x']),
+        abs(-89 - tidied['x'])
     )
 
-    tidied_training_set['angle_from_net'] = np.degrees(
-        np.arccos(tidied_training_set['x_distance_from_net'] / tidied_training_set['Distance_from_net']))
+    tidied['angle_from_net'] = np.degrees(
+        np.arccos(tidied['x_distance_from_net'] / tidied['Distance_from_net'])
+    )
 
     # can remove the x_distance_from_net column
-    tidied_training_set.drop(['x_distance_from_net'], axis=1, inplace=True)
+    tidied.drop(['x_distance_from_net'], axis=1, inplace=True)
 
-    return tidied_training_set
+    return tidied
 
 
 """##Figures"""
