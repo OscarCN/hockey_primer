@@ -29,6 +29,7 @@ Functions from Milestone 1 for getting data
 
 base_url = "https://statsapi.web.nhl.com/api/v1/"
 
+
 def get_game_ids_for_season(season):
 
     game_ids = []
