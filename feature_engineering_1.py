@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from milestone1_func import create_game_info_list, add_home_away_rink_side_columns
+from milestone1_func import create_game_info_list, add_home_away_rink_side_columns, get_play_data
 
 
 # TODO some problems with the data based on this histogram (shouldnt increase as it gets farther)
@@ -47,13 +47,19 @@ def tidy_data(df):
 
     df = df.copy()
 
-    tidied = pd.DataFrame(t for i, l in df.iterrows() for t in get_play_data(l))
+    tidied = pd.DataFrame(t for i, l in df.iterrows() for t in get_play_data(l, keep_all_events=True))
 
     # Add column Is goal (0 or 1)
     tidied['IsGoal'] = (tidied['eventTypeId'] == 'GOAL').astype(int)
 
     # Replace column emptyNet (0 or 1; you can assume NaNs are 0)
     tidied['emptyNet'] = tidied['emptyNet'].replace([np.nan, False, True], [0, 0, 1])
+
+    # TODO: REMOVE THIS ###############
+    tidied['Distance_from_net'] = np.nan
+    tidied['angle_from_net'] = np.nan
+    return tidied
+    ###################################
 
     # add rink_side column
     seasons = ["20152016", "20162017", "20172018", "20182019"]  # , "20192020"]

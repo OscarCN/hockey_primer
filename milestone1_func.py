@@ -105,7 +105,7 @@ def flatten_dict(d, prefix=''):
     return r
 
 
-def get_play_data(ld):
+def get_play_data(ld, keep_all_events=False):
 
     keep_event_types = {'SHOT', 'GOAL'}
 
@@ -125,15 +125,15 @@ def get_play_data(ld):
     for play in ld['liveData']['plays']['allPlays']:
         playdata = dict()
 
-        if not play['result']['eventTypeId'] in keep_event_types:
+        if (not keep_all_events) and play['result']['eventTypeId'] not in keep_event_types:
             continue
 
-        players = format_players(play['players'])
-        result = flatten_dict(play['result'])
-        about = flatten_dict(play['about'])
+        players = format_players(play['players']) if 'players' in play else dict()
+        result = flatten_dict(play['result']) if 'result' in play else dict()
+        about = flatten_dict(play['about']) if 'about' in play else dict()
 
-        coordinates = flatten_dict(play['coordinates'])
-        team = flatten_dict(play['team'], prefix='team')
+        coordinates = flatten_dict(play['coordinates']) if 'coordinates' in play else dict()
+        team = flatten_dict(play['team'], prefix='team') if 'team' in play else dict()
         #team = {'team_' + k: play['team'][k] for k in play['team'].keys()}
 
         playdata.update(players)

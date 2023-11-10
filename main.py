@@ -24,14 +24,6 @@ directory = "data"  # change this to your directory: run from root milestone2 di
 3. You will use the 2015/16 - 2018/19 regular season data to create your training and validation sets.
 '''
 
-# DOESN'T DO ANYTHING IF FILES ALREADY EXIST
-seasons = ["20152016", "20162017", "20172018", "20182019", "20192020"]
-for season in seasons:
-    game_ids = get_game_ids_for_season(season)
-    save_game_data_to_local(game_ids, directory)
-    print(f"Saved game data for season {season} to {directory}/game_id.json")
-
-
 # Load saved data into a pandas DataFrame
 from feature_engineering_1 import tidy_data
 
@@ -43,6 +35,14 @@ if os.path.exists(tidied_file_path) and os.path.exists(test_file_path):
     tidied_training_set = pd.read_csv(tidied_file_path)
     test_set = pd.read_csv(test_file_path)
 else:
+
+    # DOESN'T DO ANYTHING IF FILES ALREADY EXIST
+    seasons = ["20152016", "20162017", "20172018", "20182019", "20192020"]
+    for season in seasons:
+        game_ids = get_game_ids_for_season(season)
+        save_game_data_to_local(game_ids, directory)
+        print(f"Saved game data for season {season} to {directory}/game_id.json")
+
     data_list = load_data_from_files(directory)
     data = pd.DataFrame(data_list)
 
@@ -68,7 +68,8 @@ else:
 
     tidied_training_set = tidy_data(training_set)
     # To save as csv
-    tidied_training_set.to_csv(tidied_file_path, index=False)
+    #tidied_training_set.to_csv(tidied_file_path, index=False)
+
 
 
 tidied_training_set.iloc[1]
