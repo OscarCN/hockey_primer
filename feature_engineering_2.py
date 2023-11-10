@@ -3,11 +3,13 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
+
 def parse_game_date(t):
     if not pd.isnull(t):
         return datetime.strptime(t[:-4], '%Y-%m-%dT%M:%S')
     else:
         return np.nan
+
 
 def add_features2(df):
     df = df.copy()
@@ -15,7 +17,12 @@ def add_features2(df):
     df['gameDateTime'] = df['gameDateTime'].map(parse_game_date)
     df['gameEndDateTime'] = df['gameEndDateTime'].map(parse_game_date)
 
-    df['game_seconds'] = df.apply(lambda t: (t['gameEndDateTime'] - t['gameDateTime']).total_seconds() if not pd.isnull(t['gameEndDateTime']) else np.nan, axis=1)
+    df['game_seconds'] = df.apply(
+        lambda t:
+            (t['gameEndDateTime'] - t['gameDateTime']).total_seconds()
+            if not pd.isnull(t['gameEndDateTime'])
+            else np.nan,
+        axis=1)
     # BAD DATA: DROP GAMES WITH MORE THAN 200 SECONDS
 
     df = df.sort_values(['gamePk', 'periodTime'], ascending=[True, True])
