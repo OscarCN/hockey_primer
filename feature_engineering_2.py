@@ -51,13 +51,14 @@ def add_features2(df):
     )
 
     df['rebound'] = df.apply(lambda t: t['eventTypeId'] == t['last_event_type_id'], axis=1)
-    # TODO: CHECK ANGLE DIFFERENCE: MODULE 360, DEGREES, ETC
+    # TODO: CHECK ANGLE DIFFERENCE: MODULE 360, DEGREES, ETC ?
     df['change_in_angle'] = df.apply(lambda t: abs(t['angle_from_net'] - t['last_event_angle']), axis=1)
     df['speed'] = df.apply(lambda t: t['dist_from_last_event'] / (t['time_from_last_event'] + 1), axis=1)
 
-    df[['gamePk', 'eventTypeId', 'periodTime', 'x', 'y', 'last_event_type_id', 'last_event_x', 'last_event_y',
-        'last_event_time', 'time_from_last_event', 'dist_from_last_event', 'rebound']].head(60)
+    #df[['gamePk', 'eventTypeId', 'periodTime', 'x', 'y', 'last_event_type_id', 'last_event_x', 'last_event_y',
+    #    'last_event_time', 'time_from_last_event', 'dist_from_last_event', 'rebound']].head(60)
 
+    return df
 
 
 

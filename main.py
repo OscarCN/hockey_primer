@@ -11,7 +11,7 @@ import os
 import numpy as np
 
 from milestone1_func import get_game_ids_for_season, save_game_data_to_local, load_data_from_files
-
+from feature_engineering_2 import add_features2
 
 directory = "data"  # change this to your directory: run from root milestone2 dir
 
@@ -71,9 +71,6 @@ else:
     #tidied_training_set.to_csv(tidied_file_path, index=False)
 
 
-
-tidied_training_set.iloc[1]
-
 '''
 # Uncomment to delete json files from directory (can use after saving data as csv)
 # json files are around 2Gb size! 
@@ -100,7 +97,7 @@ for json_file in json_files:
 """#### 4. Feature Engineering II (15% + bonus 5%)"""
 # SEE feature_engineering_2.py
 
-
+tidied_training_set = add_features2(tidied_training_set)
 
 
 
