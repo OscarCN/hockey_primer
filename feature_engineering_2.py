@@ -54,8 +54,8 @@ def add_features2(df):
     df['change_in_angle'] = df.apply(lambda t: abs(t['angle_from_net'] - t['last_event_angle']), axis=1)
     df['speed'] = df.apply(lambda t: t['dist_from_last_event'] / (t['time_from_last_event'] + 1), axis=1)
 
-    df[['gamePk', 'eventTypeId', 'periodTime', 'x', 'y', 'last_event_type_id', 'last_event_x', 'last_event_y',
-        'last_event_time', 'time_from_last_event', 'dist_from_last_event', 'rebound', 'angle_from_net', 'last_event_angle', 'change_in_angle', 'speed']].head(60)
+    #df[['gamePk', 'eventTypeId', 'periodTime', 'x', 'y', 'last_event_type_id', 'last_event_x', 'last_event_y',
+    #    'last_event_time', 'time_from_last_event', 'dist_from_last_event', 'rebound', 'angle_from_net', 'last_event_angle', 'change_in_angle', 'speed']].head(60)
 
     return df
 
