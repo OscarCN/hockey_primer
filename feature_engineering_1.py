@@ -55,17 +55,13 @@ def tidy_data(df):
     # Replace column emptyNet (0 or 1; you can assume NaNs are 0)
     tidied['emptyNet'] = tidied['emptyNet'].replace([np.nan, False, True], [0, 0, 1])
 
-    # TODO: REMOVE THIS ###############
-    tidied['Distance_from_net'] = np.nan
-    tidied['angle_from_net'] = np.nan
-    return tidied
-    ###################################
-
     # add rink_side column
-    seasons = ["20152016", "20162017", "20172018", "20182019"]  # , "20192020"]
-    for season in seasons:
-        game_info_list = create_game_info_list(season)
-        add_home_away_rink_side_columns(tidied, game_info_list)
+    # seasons = ["20152016", "20162017", "20172018", "20182019"]  # , "20192020"]
+    # for season in seasons:
+    #     game_info_list = create_game_info_list(season)
+    #     add_home_away_rink_side_columns(tidied, game_info_list)
+
+    tidied = add_home_away_rink_side_columns(tidied)
 
     # Add column Distance from net
 

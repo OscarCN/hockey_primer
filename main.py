@@ -31,17 +31,20 @@ from feature_engineering_1 import tidy_data
 tidied_file_path = os.path.join(directory, 'tidied_training_set.csv')
 test_file_path = os.path.join(directory, 'test_set.csv')
 
-if os.path.exists(tidied_file_path) and os.path.exists(test_file_path):
+if False and (os.path.exists(tidied_file_path) and os.path.exists(test_file_path)):
     tidied_training_set = pd.read_csv(tidied_file_path)
     test_set = pd.read_csv(test_file_path)
 else:
 
     # DOESN'T DO ANYTHING IF FILES ALREADY EXIST
-    seasons = ["20152016", "20162017", "20172018", "20182019", "20192020"]
-    for season in seasons:
-        game_ids = get_game_ids_for_season(season)
-        save_game_data_to_local(game_ids, directory)
-        print(f"Saved game data for season {season} to {directory}/game_id.json")
+    download = False
+    if download:
+        # OJO: This needs the API
+        seasons = ["20152016", "20162017", "20172018", "20182019", "20192020"]
+        for season in seasons:
+            game_ids = get_game_ids_for_season(season)
+            save_game_data_to_local(game_ids, directory)
+            print(f"Saved game data for season {season} to {directory}/game_id.json")
 
     data_list = load_data_from_files(directory)
     data = pd.DataFrame(data_list)
@@ -55,9 +58,10 @@ else:
     # 2019-2020 season  # TODO: SHOULD WE KEEP ONLY game_type == '02' AS IN training_set?
     test_set = data[data['season'] == '2019'].copy()
     test_set.drop(['season', 'game_type'], axis=1, inplace=True)
+    tidied_test_set = tidy_data(test_set)
 
     # Save as csv
-    test_set.to_csv(test_file_path, index=False)
+    #test_set.to_csv(test_file_path, index=False)
 
     # TRAINING AND VALIDATION SET
 
@@ -69,6 +73,7 @@ else:
     tidied_training_set = tidy_data(training_set)
     # To save as csv
     #tidied_training_set.to_csv(tidied_file_path, index=False)
+
 
 
 '''
@@ -98,6 +103,9 @@ for json_file in json_files:
 # SEE feature_engineering_2.py
 
 tidied_training_set = add_features2(tidied_training_set)
+# here, tidied_training_set has all event types
+
+# TODO: 2019 season has bad rink side. maybe some of gamePk, team, period, coordinates are wrong?
 
 
 

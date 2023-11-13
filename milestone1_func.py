@@ -222,7 +222,32 @@ def create_game_info_list(season):
     return game_info_list
 
 
-def add_home_away_rink_side_columns(df, game_info_list):
+def add_home_away_rink_side_columns(df):
+    '''
+
+    '''
+    def other_side(s):
+        if s is None:
+            return None
+
+        if s == 'left':
+            return 'right'
+        return 'left'
+
+    period_sides = pd.read_csv('resources/period_1_sides.csv')
+    dct_sides = dict(zip(period_sides[['gamePk', 'team_name']].apply(tuple, axis=1).tolist(), period_sides['period_1_side'].tolist()))
+
+    # Infer side from where the shots were made
+    df['period_1_side'] = df.apply(lambda t: dct_sides.get((t['gamePk'], t['team_name'])), axis=1)
+    df['rink_side'] = df.apply(lambda t: t['period_1_side'] if t['period'] % 2 == 1 else other_side(t['period_1_side']), axis=1)
+    #df[['gamePk', 'period', 'team_name', 'period_1_side', 'rink_side']].head(60)
+
+    del df['period_1_side']
+
+    return df
+
+
+def add_home_away_rink_side_columns_api(df, game_info_list):
     '''
     Use game_info_list to add the columns 'home_or_away' and 'rink_side' to the df
     '''
