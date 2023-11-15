@@ -102,23 +102,35 @@ def add_features2(df):
             t['periodTime']),
         axis=1)
 
-    def time_since_powerplay(gamepk, period, team, time):
+    def powerplay_start(gamepk, period, team, time):
         if np.isnan(team):
-            return np.nan  # Doesnt matter as we intend to keep only shots
+            return np.nan  # Doesn't matter as we intend to keep only shots
 
-        powerplay_start = '99:99'
+        _powerplay_start = '99:99'
         for times in penalties_dct.get((gamepk, period, team), []):
-            if times['periodTime'] <= time < times['periodTimeEnd']:
-                powerplay_start = min(powerplay_start, times['periodTime'])
+            if times['periodTime'] < time < times['periodTimeEnd']:
+                _powerplay_start = min(_powerplay_start, times['periodTime'])
 
         for times in penalties_dct.get((gamepk, period, opposing_team_dct[(gamepk, team)]), []):
-            if times['periodTime'] <= time < times['periodTimeEnd']:
-                powerplay_start = min(powerplay_start, times['periodTime'])
+            if times['periodTime'] < time < times['periodTimeEnd']:
+                _powerplay_start = min(_powerplay_start, times['periodTime'])
 
-        if powerplay_start == '99:99':
+        if _powerplay_start == '99:99':
             return np.nan
 
-        return period_time_distance(powerplay_start, time)
+        return _powerplay_start
+
+    def time_since_powerplay(gamepk, period, team, time):
+        _start = powerplay_start(gamepk, period, team, time)
+        c_start = _start
+        while not pd.isnull(_start):  # Iterate since start of powerplay time windows, until penalty wasn't in powerplay
+            c_start = _start
+            _start = powerplay_start(gamepk, period, team, _start)
+
+        if pd.isnull(c_start):
+            return np.nan
+
+        return period_time_distance(c_start, time)
 
     df['time_since_powerplay'] = df.apply(
         lambda t: time_since_powerplay(t['gamePk'], t['period'], t['team_id'], t['periodTime']),
