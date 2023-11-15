@@ -28,8 +28,8 @@ directory = "data"  # change this to your directory: run from root milestone2 di
 from feature_engineering_1 import tidy_data
 
 
-tidied_file_path = os.path.join(directory, 'tidied_training_set.csv')
-test_file_path = os.path.join(directory, 'test_set.csv')
+tidied_file_path = os.path.join(directory, 'tidied_training_set_f2.csv')
+test_file_path = os.path.join(directory, 'test_set_f2.csv')
 
 if False and (os.path.exists(tidied_file_path) and os.path.exists(test_file_path)):
     tidied_training_set = pd.read_csv(tidied_file_path)
@@ -53,15 +53,33 @@ else:
     data['season'] = data['gamePk'].apply(lambda x: str(x)[:4])
     data['game_type'] = data['gamePk'].apply(lambda x: str(x)[4:6])
 
-    # TEST SET  # TODO: TIDY TEST DATA HERE ALSO
+    # TEST SET #########################
 
     # 2019-2020 season  # TODO: SHOULD WE KEEP ONLY game_type == '02' AS IN training_set?
     test_set = data[data['season'] == '2019'].copy()
     test_set.drop(['season', 'game_type'], axis=1, inplace=True)
+
     tidied_test_set = tidy_data(test_set)
+    tidied_test_set = add_features2(tidied_test_set)
+    tidied_test_set = tidied_test_set[tidied_test_set.eventTypeId.map(lambda t: t in {'SHOT', 'GOAL'})]
+
+    dismiss = {'Winner_fullName',
+       'Winner_link', 'Loser_fullName', 'Loser_link', 'team_link', 'team_triCode', 'Hitter_id',
+       'Hitter_fullName', 'Hitter_link', 'Hittee_id', 'Hittee_fullName',
+       'Hittee_link', 'Shooter_id', 'Shooter_fullName', 'Shooter_link',
+       'Goalie_id', 'Goalie_fullName', 'Goalie_link', 'secondaryType',
+       'PlayerID_id', 'PlayerID_fullName', 'PlayerID_link', 'Blocker_id',
+       'Blocker_fullName', 'Blocker_link', 'PenaltyOn_id',
+       'PenaltyOn_fullName', 'PenaltyOn_link', 'DrewBy_id', 'DrewBy_fullName',
+       'DrewBy_link', 'ServedBy_id',
+       'ServedBy_fullName', 'ServedBy_link', 'Scorer_id', 'Scorer_fullName',
+       'Scorer_link', 'Assist_id', 'Assist_fullName', 'Assist_link'}
 
     # Save as csv
-    #test_set.to_csv(test_file_path, index=False)
+    tidied_test_set[[t for t in tidied_test_set.columns if t not in dismiss]].to_csv(test_file_path, index=False)
+
+    # Save as csv
+    # test_set.to_csv(test_file_path, index=False)
 
     # TRAINING AND VALIDATION SET
 
@@ -71,8 +89,11 @@ else:
     training_set.drop(['season', 'game_type'], axis=1, inplace=True)
 
     tidied_training_set = tidy_data(training_set)
-    # To save as csv
-    #tidied_training_set.to_csv(tidied_file_path, index=False)
+    tidied_training_set = add_features2(tidied_training_set)
+    tidied_training_set = tidied_training_set[tidied_training_set.eventTypeId.map(lambda t: t in {'SHOT', 'GOAL'})]
+
+    # Save as csv
+    tidied_training_set[[t for t in tidied_training_set.columns if t not in dismiss]].to_csv(tidied_file_path, index=False)
 
 
 
@@ -102,7 +123,7 @@ for json_file in json_files:
 """#### 4. Feature Engineering II (15% + bonus 5%)"""
 # SEE feature_engineering_2.py
 
-tidied_training_set = add_features2(tidied_training_set)
+
 # here, tidied_training_set has all event types
 
 # TODO: 2019 season has bad rink side. maybe some of gamePk, team, period, coordinates are wrong?

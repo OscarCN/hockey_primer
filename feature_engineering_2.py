@@ -1,4 +1,5 @@
-from datetime import datetime
+from collections import defaultdict
+from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
@@ -32,12 +33,14 @@ def add_features2(df):
     df['last_event_time'] = df.groupby('gamePk')['periodTime'].shift(1)
     df['last_event_angle'] = df.groupby('gamePk')['angle_from_net'].shift(1)
 
+    norm_period_time = lambda t: datetime(2000, 1, 1, 0, int(t.split(':')[0]), int(t.split(':')[1]))
+
     def period_time_distance(pt1, pt2):
         if (not isinstance(pt2, str)) or (not isinstance(pt1, str)):
             return np.nan
 
-        dt1 = datetime(2000, 1, 1, 0, int(pt1.split(':')[0]), int(pt1.split(':')[1]))
-        dt2 = datetime(2000, 1, 1, 0, int(pt2.split(':')[0]), int(pt2.split(':')[1]))
+        dt1 = norm_period_time(pt1)
+        dt2 = norm_period_time(pt2)
 
         return (dt2 - dt1).total_seconds()
 
@@ -53,6 +56,74 @@ def add_features2(df):
     df['rebound'] = df.apply(lambda t: t['eventTypeId'] == t['last_event_type_id'], axis=1)
     df['change_in_angle'] = df.apply(lambda t: abs(t['angle_from_net'] - t['last_event_angle']), axis=1)
     df['speed'] = df.apply(lambda t: t['dist_from_last_event'] / (t['time_from_last_event'] + 1), axis=1)
+
+    ####################################
+    # BONUS FEATURES ##################
+
+    penalties = df[df.eventTypeId == 'PENALTY'][['gamePk', 'period', 'periodTime', 'team_id', 'penaltyMinutes']]
+    penalties['periodTimeEnd'] = penalties.apply(
+        lambda t: (norm_period_time(t['periodTime']) + timedelta(minutes=t['penaltyMinutes'])).strftime('%M:%S'),
+        axis=1
+    )
+
+    game_teams = df.groupby('gamePk')['team_id'].agg(
+        lambda t: sorted(map(int, filter(lambda k: not np.isnan(k), np.unique(t.values))))
+    ).reset_index()
+
+    opposing_team_dct = dict()
+    game_teams.apply(lambda t: opposing_team_dct.update({(t['gamePk'], t['team_id'][0]): t['team_id'][1]}), axis=1)
+    game_teams.apply(lambda t: opposing_team_dct.update({(t['gamePk'], t['team_id'][1]): t['team_id'][0]}), axis=1)
+
+    penalties_dct = defaultdict(list)
+    penalties[['gamePk', 'period', 'team_id', 'periodTime', 'periodTimeEnd']].apply(
+        lambda t: penalties_dct[(t['gamePk'], t['period'], t['team_id'])].append({
+            'periodTime': t['periodTime'],
+            'periodTimeEnd': t['periodTimeEnd']}
+        ), axis=1)
+
+    def get_n_players(gamepk, period, team, time):
+        n = 5
+        if (gamepk, period, team) in penalties_dct:
+            c_penal = penalties_dct[(gamepk, period, team)]
+            for times in c_penal:
+                if times['periodTime'] <= time < times['periodTimeEnd']:
+                    n -= 1
+        return n
+
+    df['n_players'] = df.apply(
+        lambda t: get_n_players(t['gamePk'], t['period'], t['team_id'], t['periodTime']),
+        axis=1
+    )
+    df['n_opposing_players'] = df.apply(
+        lambda t: get_n_players(
+            t['gamePk'],
+            t['period'],
+            opposing_team_dct.get((t['gamePk'], t['team_id']), np.nan),
+            t['periodTime']),
+        axis=1)
+
+    def time_since_powerplay(gamepk, period, team, time):
+        if np.isnan(team):
+            return np.nan  # Doesnt matter as we intend to keep only shots
+
+        powerplay_start = '99:99'
+        for times in penalties_dct.get((gamepk, period, team), []):
+            if times['periodTime'] <= time < times['periodTimeEnd']:
+                powerplay_start = min(powerplay_start, times['periodTime'])
+
+        for times in penalties_dct.get((gamepk, period, opposing_team_dct[(gamepk, team)]), []):
+            if times['periodTime'] <= time < times['periodTimeEnd']:
+                powerplay_start = min(powerplay_start, times['periodTime'])
+
+        if powerplay_start == '99:99':
+            return np.nan
+
+        return period_time_distance(powerplay_start, time)
+
+    df['time_since_powerplay'] = df.apply(
+        lambda t: time_since_powerplay(t['gamePk'], t['period'], t['team_id'], t['periodTime']),
+        axis=1
+    )
 
     #df[['gamePk', 'eventTypeId', 'periodTime', 'x', 'y', 'last_event_type_id', 'last_event_x', 'last_event_y',
     #    'last_event_time', 'time_from_last_event', 'dist_from_last_event', 'rebound', 'angle_from_net', 'last_event_angle', 'change_in_angle', 'speed']].head(60)
