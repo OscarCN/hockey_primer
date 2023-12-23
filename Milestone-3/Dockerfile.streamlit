@@ -8,11 +8,11 @@
 
 # https://docs.docker.com/engine/reference/builder/#from
 # You shouldn't need to change this
-FROM python:3.7
+# FROM python:3.7
 
 # https://docs.docker.com/engine/reference/builder/#workdir
 # Create and cd into /code as your working directory
-WORKDIR /code
+# WORKDIR /code
 
 
 # The main docker commands you will find useful:
@@ -55,3 +55,24 @@ WORKDIR /code
 
 # TODO: specify default command - this is not required because you can always specify the command
 # either with the docker run command or in the docker-compose file
+
+FROM python:3.7
+
+WORKDIR /code 
+
+COPY requirements.txt requirements.txt
+RUN pip3 install -r requirements.txt
+
+COPY .env .env
+
+COPY ift6758 ift6758
+RUN pip install -e ift6758/
+
+#COPY serving/app.py app.py
+COPY streamlit_app.py streamlit_app.py
+
+ENV COMET_API_KEY=${COMET_API_KEY}
+
+EXPOSE 8001
+#CMD ["gunicorn", "--bind", "0.0.0.0:8000", "app:app"]
+CMD ["streamlit", "run", "streamlit_app.py", "--server.port", "8001", "--server.address", "0.0.0.0"]

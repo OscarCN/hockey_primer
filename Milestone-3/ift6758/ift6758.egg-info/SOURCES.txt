@@ -8,4 +8,4 @@ ift6758/client/__init__.py
 ift6758/client/game_client.py
 ift6758/client/ift6758_milestone3.py
 ift6758/client/serving_client.py
-ift6758/data/__init__.py
+ift6758/client/stt.py

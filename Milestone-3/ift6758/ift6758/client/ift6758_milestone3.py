@@ -110,7 +110,7 @@ def get_play_data(ld):
     playdata['situationCode'] = play.get('situationCode')
     playdata['eventOwnerTeamId'] = play['details'].get('eventOwnerTeamId') #find which team number corresponds to'''
 
-    return playdata
+    yield playdata
 
 
 '''
@@ -166,6 +166,7 @@ Add features:
 def add_features(tidied_training_set):
 
   # Add column Is goal (0 or 1)
+  print(tidied_training_set)
   tidied_training_set['IsGoal'] = (tidied_training_set['typeDescKey'] == 'goal').astype(int)
 
   tidied_training_set['emptyNet'] = tidied_training_set.apply(is_empty_net, axis=1)

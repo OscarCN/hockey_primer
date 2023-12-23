@@ -8,12 +8,12 @@ logger = logging.getLogger(__name__)
 
 
 class ServingClient:
-    def __init__(self, ip: str = "0.0.0.0", port: int = 5000, features=None):
+    def __init__(self, ip: str = "0.0.0.0", port: int = 8000, features=None):
         self.base_url = f"http://{ip}:{port}"
         logger.info(f"Initializing client; base URL: {self.base_url}")
 
         if features is None:
-            features = ["distance"]
+            features = ["distanceFromNet", "angleFromNet"]
         self.features = features
 
         # any other potential initialization
@@ -27,21 +27,35 @@ class ServingClient:
         Args:
             X (Dataframe): Input dataframe to submit to the prediction service.
         """
+        
+        print(X.columns)
+        print(self.features)
+        X = X[self.features]
+
+        #rename columns to match the model 
+        X = X.rename(columns={"distanceFromNet": "Distance_from_net", "angleFromNet": "angle_from_net"})
+
+
+        result = {"features": X.to_dict(orient="records")}
+
         response = requests.post(
             f"{self.base_url}/predict", timeout = 10,
-            json = X
+            json = result
         )
         if response.status_code == 400:
             logger.info("Failed requesting prediction: %s", response.content)
             return 0
+        print(response.json() )
         logger.info("Prediction process finished")
-        return response.json()["response"]
+        logger.info("Response: %s", response.json())
+
+        return response.json()
     
-        raise NotImplementedError("TODO: implement this function")
 
     def logs(self) -> dict:
         """Get server logs"""
         logger.info("Requesting logs")
+        print(f"{self.base_url}/logs")
         log_request = requests.get(
             f"{self.base_url}/logs", timeout = 5
         )
@@ -66,12 +80,12 @@ class ServingClient:
         """
         model_schema = {
             "workspace": workspace,
-            "registry": model,
+            "model_name": model,
             "version": version
         }
         download_request = requests.post(
             f"{self.base_url}/download_registry_model", timeout = 60,
-            json = model_schema
+            json = model_schema, verify=False
         )
         if download_request.status_code != 200:
             logger.info("Failed loadding %s model", model)

@@ -8,7 +8,7 @@ import math
 import time
 
 # Assuming ift6758_milestone3 contains the provided helper functions
-from ift6758_milestone3 import get_play_data, add_features, fetch_game_data
+from ift6758.client.ift6758_milestone3 import get_play_data, add_features, fetch_game_data
 
 class GameClient:
     def __init__(self):
@@ -37,8 +37,8 @@ class GameClient:
             game_data = json.load(file)
 
         # Process the game data to get a DataFrame
-        df_game_tidied = pd.DataFrame([get_play_data(game_data)])
-        print(df_game_tidied)
+        df_game_tidied = pd.DataFrame([x for x in get_play_data(game_data)])
+        print(df_game_tidied.columns)
         df_game_features = add_features(df_game_tidied)
         last_event = df_game_features.iloc[-1]
         self.game = df_game_features

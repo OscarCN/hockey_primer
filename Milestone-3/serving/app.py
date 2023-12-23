@@ -24,7 +24,8 @@ from comet_ml.exceptions import CometRestApiException
 
 # import ift6758
 
-COMET_API_KEY = "YOpcMk2b4epnXXRcSzewfCSwg"#os.environ.get("COMET_API_KEY","YOpcMk2b4epnXXRcSzewfCSwg")
+COMET_API_KEY = os.environ.get("COMET_API_KEY","YOpcMk2b4epnXXRcSzewfCSwg")
+COMET_API_KEY = "YOpcMk2b4epnXXRcSzewfCSwg"
 LOG_FILE = os.environ.get("FLASK_LOG", "flask.log")
 DEFAULT_WORKSPACE = os.environ.get("DEFAULT_WORKSPACE", 'ift6758-milestone2-team07')
 DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL", 'simple_both')
@@ -181,10 +182,10 @@ def predict():
     if 'features' not in req or (not isinstance(req['features'], list)) or (len(req['features']) == 0) or (not isinstance(req['features'][0], dict)):
         app.logger.info(f'bad input {req}')
         return jsonify({'error_msg': usage})
-
+    
     x = np.array([[sample[t] for t in feats_catalogue[model_name]] for sample in req['features']])
 
-    pred = model.predict(pd.DataFrame(x, columns=feats_catalogue[model_name]))
+    pred = model.predict_proba(pd.DataFrame(x, columns=feats_catalogue[model_name]))
 
     response = {'predicted': pred.tolist()}
 
